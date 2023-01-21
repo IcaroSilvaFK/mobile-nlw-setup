@@ -8,7 +8,11 @@ const { Navigator, Screen } = createNativeStackNavigator();
 
 export function Stack() {
   return (
-    <Navigator>
+    <Navigator
+      screenOptions={{
+        headerShown: false,
+      }}
+    >
       <Screen name='home' component={Home} />
       <Screen name='new' component={NewHabit} />
       <Screen name='habit' component={Habit} />

@@ -5,12 +5,14 @@ import {
   Text,
   TextInput,
   TouchableOpacity,
+  ActivityIndicator,
 } from 'react-native';
 import colors from 'tailwindcss/colors';
 import { Feather } from '@expo/vector-icons';
 
 import { BackButton } from '../../components/BackButton';
 import { Checkbox } from '../../components/Checkbox';
+import { api } from '../../global/configs/axios';
 
 const days = [
   {
@@ -45,6 +47,8 @@ const days = [
 
 export function NewHabit() {
   const [daysSelected, setDaysSelected] = useState<number[]>([]);
+  const [title, setTitle] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   function handleAddOrRemoveDayInSelectedDay(day: number) {
     const existsDayInSelectedDays = daysSelected.includes(day);
@@ -55,6 +59,23 @@ export function NewHabit() {
 
     if (!existsDayInSelectedDays) {
       return setDaysSelected((prev) => [...prev, day]);
+    }
+  }
+
+  async function onSubmit() {
+    try {
+      setIsSubmitting(true);
+      await api.post('/habits', {
+        title,
+        weekDays: daysSelected,
+      });
+
+      setDaysSelected([]);
+      setTitle('');
+    } catch (err) {
+      console.log(err);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -70,9 +91,11 @@ export function NewHabit() {
         </Text>
 
         <TextInput
-          className='h-12 pl-4 rounded-lg mt-3 bg-zinc-800 text-white focus:border-2 focus:border-green-600'
+          className='h-12 pl-4 rounded-lg mt-3 bg-zinc-800 border-zinc-400 text-white focus:border-2 focus:border-green-600'
           placeholder='Exercícios, dormir bem, etc...'
           placeholderTextColor={colors.white}
+          value={title}
+          onChangeText={setTitle}
         />
         <Text className='mt-6 text-zinc-300 font-semibold text-base'>
           Qual a recorrência ?
@@ -92,11 +115,19 @@ export function NewHabit() {
         <TouchableOpacity
           className='flex-row w-full h-14 items-center justify-center bg-green-600 rounded-md mt-6'
           activeOpacity={0.7}
+          onPress={onSubmit}
+          disabled={isSubmitting}
         >
-          <Feather name='check' size={20} color={colors.white} />
-          <Text className='font-semibold text-base text-white ml-2'>
-            Confirmar
-          </Text>
+          {isSubmitting ? (
+            <ActivityIndicator color={colors.white} />
+          ) : (
+            <>
+              <Feather name='check' size={20} color={colors.white} />
+              <Text className='font-semibold text-base text-white ml-2'>
+                Confirmar
+              </Text>
+            </>
+          )}
         </TouchableOpacity>
       </ScrollView>
     </View>
